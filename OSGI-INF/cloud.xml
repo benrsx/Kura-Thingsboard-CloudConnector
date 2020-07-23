@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activated" configuration-policy="require" deactivate="deactivated" enabled="true" immediate="false" modified="updated" name="fr.edf.rd.kura.cloudconnection.thingsboard.cloud.ThingsboardCloudEndpoint">
+   <implementation class="fr.edf.rd.kura.cloudconnection.thingsboard.cloud.ThingsboardCloudEndpoint"/>
+   <service>
+      <provide interface="org.eclipse.kura.configuration.ConfigurableComponent"/>
+      <provide interface="org.eclipse.kura.cloudconnection.CloudConnectionManager"/>
+      <provide interface="org.eclipse.kura.cloudconnection.CloudEndpoint"/>
+   </service>
+   <reference name="DataService" 
+              interface="org.eclipse.kura.data.DataService" 
+              policy="static" 
+              cardinality="1..1" 
+              bind="setDataService" 
+              unbind="unsetDataService"/>
+   <property name="kura.ui.service.hide" type="Boolean" value="true"/>
+   <reference bind="setEventAdmin" cardinality="1..1" interface="org.osgi.service.event.EventAdmin" name="EventAdmin" policy="static" unbind="unsetEventAdmin"/>
+</scr:component>

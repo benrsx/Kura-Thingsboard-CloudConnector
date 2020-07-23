@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<MetaData xmlns="http://www.osgi.org/xmlns/metatype/v1.2.0" localization="en_us">
+    <OCD id="fr.edf.rd.kura.cloudconnection.thingsboard.cloud.ThingsboardCloudEndpoint"
+         name="ThingsboardCloudEndpoint" 
+         description="A CloudEndpoint that allows to publish MQTT messages on Thingsboard.">
+
+        <Icon resource="CloudService" size="32"/>
+    </OCD>
+
+    <Designate pid="fr.edf.rd.kura.cloudconnection.thingsboard.cloud.ThingsboardCloudEndpoint" factoryPid="fr.edf.rd.kura.cloudconnection.thingsboard.cloud.ThingsboardCloudEndpoint">
+        <Object ocdref="fr.edf.rd.kura.cloudconnection.thingsboard.cloud.ThingsboardCloudEndpoint"/>
+    </Designate>
+</MetaData>

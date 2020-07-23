@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<MetaData xmlns="http://www.osgi.org/xmlns/metatype/v1.2.0" localization="en_us">
+    <OCD id="fr.edf.rd.kura.cloudconnection.thingsboard.publisher.ThingsboardPublisher" 
+         name="CloudPublisher" 
+         description="The CloudPublisher allows to define publishing parameters and provide a simple endpoint where the applications can attach to publish their messages.">
+        
+        <AD id="topic"
+        	name="Topic"
+        	type="String"
+        	cardinality="0"
+        	required="true"
+        	default=""
+        	description='The MQTT topic to publish messages on.'>
+        </AD>
+                    
+        <AD id="qos"
+            name="Qos"
+            type="Integer"
+            cardinality="0"
+            required="true"
+            default="0"
+            description='The desired quality of service for the messages that have to be published. If Qos is 0, the message is delivered at most once, or it is not delivered at all. If Qos is set to 1, the message is always delivered at least once. If set to 2, the message will be delivered exactly once.'>
+            <Option label="0" value="0" />
+            <Option label="1" value="1" />
+            <Option label="2" value="2" />
+        </AD>
+                    
+        <AD id="retain"
+            name="Retain"
+            type="Boolean"
+            cardinality="0"
+            required="true"
+            default="false"
+            description="Retain flag for the published messages.">
+        </AD>
+            
+        <AD id="priority"
+            name="Priority"
+            type="Integer"
+            cardinality="0"
+            required="true"
+            default="7"
+            description='The priority of the messages. 0 is highest priority. This parameter is related to the DataService component of the cloud stack.'>
+        </AD>
+    </OCD>
+    
+    <Designate pid="fr.edf.rd.kura.cloudconnection.thingsboard.publisher.ThingsboardPublisher" factoryPid="fr.edf.rd.kura.cloudconnection.thingsboard.publisher.ThingsboardPublisher">
+        <Object ocdref="fr.edf.rd.kura.cloudconnection.thingsboard.publisher.ThingsboardPublisher"/>
+    </Designate>
+</MetaData>

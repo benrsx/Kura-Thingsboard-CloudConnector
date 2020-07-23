@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activated" configuration-policy="require" deactivate="deactivated" enabled="true" immediate="true" modified="updated" name="fr.edf.rd.kura.cloudconnection.thingsboard.publisher.ThingsboardPublisher">
+   <implementation class="fr.edf.rd.kura.cloudconnection.thingsboard.publisher.ThingsboardPublisher"/>
+   <service>
+      <provide interface="org.eclipse.kura.cloudconnection.publisher.CloudPublisher"/>
+      <provide interface="org.eclipse.kura.configuration.ConfigurableComponent"/>
+   </service>
+   <property name="service.pid" type="String" value="fr.edf.rd.kura.cloudconnection.thingsboard.publisher.ThingsboardPublisher"/>
+   <property name="cloud.connection.factory.pid" type="String" value="fr.edf.rd.kura.cloudconnection.thingsboard.cloud.ThingsboardCloudEndpoint"/>
+   <property name="kura.ui.service.hide" type="Boolean" value="true"/>
+   <property name="kura.ui.factory.hide" type="String" value="true"/>
+</scr:component>
