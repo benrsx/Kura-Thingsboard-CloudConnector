@@ -5,13 +5,13 @@
          name="CloudPublisher" 
          description="The CloudPublisher allows to define publishing parameters and provide a simple endpoint where the applications can attach to publish their messages.">
         
-        <AD id="topic"
-        	name="Topic"
-        	type="String"
-        	cardinality="0"
-        	required="true"
-        	default=""
-        	description='The MQTT topic to publish messages on.'>
+        <AD id="device.id"
+                name="Device identifier"
+                type="String"
+                cardinality="0"
+                required="true"
+                default="$assetName"
+                description='Device identifier used as device name in Thingsboard, wildcards can be defined by specifing a $value in the field. '>
         </AD>
                     
         <AD id="qos"

@@ -9,25 +9,25 @@ import fr.edf.rd.kura.cloudconnection.thingsboard.util.Property;
 
 public class PublishOptions {
 
-    public static final Property<String> TOPIC_PROP = new Property<>("topic", String.class);
+    private static final Property<String> DEVICE_ID = new Property<>("device.id", "$assetName");
     public static final Property<Qos> QOS_PROP = new Property<>("qos", 0).map(Qos.class, Qos::valueOf);
     public static final Property<Boolean> RETAIN_PROP = new Property<>("retain", false);
     public static final Property<Integer> PRIORITY_PROP = new Property<>("priority", 4);
 
-    private final String topic;
+    private final String deviceId;
     private final Qos qos;
     private final boolean retain;
     private final int priority;
 
     public PublishOptions(final Map<String, Object> properties) throws KuraException {
-        this.topic = TOPIC_PROP.get(properties);
+        this.deviceId = DEVICE_ID.getOrDefault(properties);
         this.qos = QOS_PROP.getOrDefault(properties);
         this.retain = RETAIN_PROP.getOrDefault(properties);
         this.priority = PRIORITY_PROP.getOrDefault(properties);
     }
 
-    public String getTopic() {
-        return this.topic;
+    public String getDeviceId() {
+        return this.deviceId;
     }
 
     public Qos getQos() {

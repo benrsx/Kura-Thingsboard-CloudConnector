@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.regex.Matcher;
 
 import org.eclipse.kura.KuraConnectException;
 import org.eclipse.kura.KuraDisconnectException;
@@ -37,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
@@ -130,13 +132,23 @@ public class ThingsboardCloudEndpoint
     @Override
     public String publish(final KuraMessage message) throws KuraException {
 
-        return publish(new PublishOptions(message.getProperties()), message.getPayload());
-    }
-
-    public String publish(final PublishOptions options, final KuraPayload kuraPayload) throws KuraException {
+        PublishOptions options = new PublishOptions(message.getProperties());
+        KuraPayload kuraPayload = message.getPayload();
 
         final int qos = options.getQos().getValue();
 
+        logger.info(options.getDeviceId());
+
+        final String deviceId = fillDeviceIdPlaceholders(options.getDeviceId(), message);
+
+        // Publish device on thingsboard device connect API
+        JsonObject connectJson = new JsonObject();
+        connectJson.add("device", deviceId);
+        byte[] connectPayload = connectJson.toString().getBytes(StandardCharsets.UTF_8);
+        this.dataService.publish(Constants.CONNECT_TOPIC, connectPayload, qos, options.getRetain(),
+                options.getPriority());
+
+        // Build and publish device data
         JsonObject values = new JsonObject();
         Iterator<String> metrics = kuraPayload.metricsIterator();
 
@@ -163,13 +175,19 @@ public class ThingsboardCloudEndpoint
             values.add("longitude", kuraPayload.getPosition().getLongitude());
         }
 
+        JsonObject deviceJson = new JsonObject();
+        deviceJson.add("ts", kuraPayload.getTimestamp().getTime());
+        deviceJson.add("values", values);
+
+        JsonArray array = new JsonArray();
+        array.add(deviceJson);
+
         JsonObject json = new JsonObject();
-        json.add("ts", kuraPayload.getTimestamp().getTime());
-        json.add("values", values);
+        json.add(deviceId, array);
 
         byte[] payload = json.toString().getBytes(StandardCharsets.UTF_8);
 
-        final int id = this.dataService.publish(options.getTopic(), payload, qos, options.getRetain(),
+        final int id = this.dataService.publish(Constants.TELEMETRY_TOPIC, payload, qos, options.getRetain(),
                 options.getPriority());
 
         if (qos == 0) {
@@ -178,6 +196,26 @@ public class ThingsboardCloudEndpoint
             return Integer.toString(id);
         }
 
+    }
+
+    private String fillDeviceIdPlaceholders(String deviceId, KuraMessage message) {
+
+        Matcher matcher = Constants.DEVICE_ID_PATTERN.matcher(deviceId);
+        StringBuffer buffer = new StringBuffer();
+
+        while (matcher.find()) {
+            Map<String, Object> properties = message.getProperties();
+            if (properties.containsKey(matcher.group(1))) {
+                String replacement = matcher.group(0);
+
+                Object value = properties.get(matcher.group(1));
+                if (replacement != null) {
+                    matcher.appendReplacement(buffer, value.toString());
+                }
+            }
+        }
+        matcher.appendTail(buffer);
+        return buffer.toString();
     }
 
     @Override
@@ -277,6 +315,9 @@ public class ThingsboardCloudEndpoint
         String stringJson = new String(payload, StandardCharsets.UTF_8);
         JsonObject json = Json.parse(stringJson).asObject();
 
+        String deviceId = json.get("device").asString();
+        kuraPayload.addMetric("assetName", deviceId);
+
         JsonObject params = Json.parse(json.get("params").asString()).asObject();
 
         for (JsonObject.Member member : params) {
@@ -302,7 +343,7 @@ public class ThingsboardCloudEndpoint
         final KuraMessage message = new KuraMessage(kuraPayload, messageProperties);
 
         for (final Entry<SubscribeOptions, Set<CloudSubscriberListener>> e : this.subscribers.entrySet()) {
-            if (MqttTopicUtil.isMatched(e.getKey().getTopicFilter(), topic)) {
+            if (MqttTopicUtil.isMatched(Constants.SUBSCRIBE_TOPIC, topic)) {
                 e.getValue().forEach(catchAll(l -> l.onMessageArrived(message)));
             }
         }
@@ -330,7 +371,7 @@ public class ThingsboardCloudEndpoint
 
     private void subscribe(final SubscribeOptions options) {
         try {
-            final String topicFilter = options.getTopicFilter();
+            final String topicFilter = Constants.SUBSCRIBE_TOPIC;
             final int qos = options.getQos().getValue();
 
             logger.info("subscribing to {} with qos {}", topicFilter, qos);
@@ -344,7 +385,7 @@ public class ThingsboardCloudEndpoint
 
     private void unsubscribe(final SubscribeOptions options) {
         try {
-            final String topicFilter = options.getTopicFilter();
+            final String topicFilter = Constants.SUBSCRIBE_TOPIC;
 
             logger.info("unsubscribing from {}", topicFilter);
             this.dataService.unsubscribe(topicFilter);
